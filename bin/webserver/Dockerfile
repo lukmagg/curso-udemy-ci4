@@ -44,6 +44,7 @@ RUN docker-php-ext-install zip
 RUN apt-get -y install libicu-dev
 RUN docker-php-ext-install -j$(nproc) intl
 
+
 # RUN docker-php-ext-install mbstring
 RUN docker-php-ext-install bcmath
 
