@@ -1,0 +1,49 @@
+version: "3"
+
+services:
+    webserver:
+        build: ./bin/webserver
+        hostname: testemail.security-scout.com
+        command: >
+          bash -c "/etc/init.d/postfix restart && apachectl -D FOREGROUND"
+        ports:
+            - "8084:80"
+            - "587:587"
+            - "465:465"
+        volumes:
+            - ./www/html:/var/www/html/
+            - ./config/php:/usr/local/etc/php
+            - ./config/apache2_config/apache2.conf:/etc/apache2/apache2.conf
+            - ./logs/php:/var/log/apache2
+            - ./etc/hosts:/etc/hosts
+        links:
+          - mysql
+        networks:
+            - default
+    mysql:
+        image: mysql:8.0.26
+        container_name: 'sever-mysql'
+        restart: 'always'
+        ports:
+            - "3306:3306"
+        volumes:
+            - ${MYSQL_DATA_DIR-./data/mysql}:/var/lib/mysql
+            - ${MYSQL_LOG_DIR-./logs/mysql}:/var/log/mysql
+        environment:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: dev_sputnik
+          MYSQL_USER: root
+          MYSQL_PASSWORD: root
+    phpmyadmin:
+        depends_on:
+          - mysql
+        image: phpmyadmin/phpmyadmin
+        container_name: phpmyadmin
+        restart: always
+        ports:
+          - 8010:80
+        environment:
+          PMA_HOST: mysql
+          UPLOAD_LIMIT: 200M
+volumes:
+    persistent:
